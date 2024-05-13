@@ -13,28 +13,31 @@ ROOT_DIR = BASE_DIR
 sys.path.append(os.path.join(ROOT_DIR, '../'))
 
 from utils import logging
-from data_utils.datasets import CIFAR10, CIFAR100, SVHN, GTSRB
+from data_utils.datasets import CIFAR10, CIFAR100, SVHN, GTSRB, Flowers102
 
 logger = logging.get_logger("lmeraser")
 _DATASET_CATALOG = {
     "cifar10": CIFAR10, 
     "cifar100": CIFAR100, 
     "svhn": SVHN, 
-    "gtsrb": GTSRB
+    "gtsrb": GTSRB,
+    "oxfordflower":Flowers102
 }
 
 _DATA_DIR_CATALOG = {
     "cifar10": "torchvision_dataset/", 
     "cifar100": "torchvision_dataset/", 
     "svhn": "torchvision_dataset/", 
-    "gtsrb": "torchvision_dataset/"
+    "gtsrb": "torchvision_dataset/",
+    "oxfordflower":"torchvision_dataset/"
 }
 
 _NUM_CLASSES_CATALOG = {
     "cifar10": 10, 
     "cifar100": 100, 
     "svhn": 10, 
-    "gtsrb": 43
+    "gtsrb": 43,
+    "oxfordflower":102
 }
 
 

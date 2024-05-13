@@ -3,7 +3,7 @@
  # Created Date: Dec 16th 2023
  # Author: Anonymous
  # -----
- # Last Modified: Saturday, 11th May 2024 9:41:05 am
+ # Last Modified: Saturday, 20th January 2024 1:02:18 am
  # -----
  # HISTORY:
  # Date      		By   	Comments
@@ -24,7 +24,6 @@ from copy import deepcopy
 import torch
 import torch.nn as nn
 import sklearn.cluster as cluster
-
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR = BASE_DIR
@@ -212,10 +211,8 @@ class Eraser(object):
 
         train_loader, _, _ = data_loader
         threshold_dict = {
-            "vit-b-22k": 10,
-            "vit-b-1k": 10,
-            "swin-b-22k": 10, 
-            "swin-b-1k": 10, 
+            "vit-b-22k": self.args.distance_threshold,
+            "swin-b-22k": 20,
         }
         hc = cluster.AgglomerativeClustering(
             n_clusters=None,
@@ -225,7 +222,14 @@ class Eraser(object):
         rep_gather = None  # Initialize rep_gather
         with torch.no_grad():
             for sample in train_loader:
-                image = sample["image"].to(self.devicename)
+                # # =========================================================================
+                # raise RuntimeError(f"type of sample is {len(sample)} and {len(sample[0])} and {len(sample[0][0])} and {len(sample[0][0][0])} and  {len(sample[0][0][0][0])} \n {sample[1]} \n {len(sample[1])}") # added this to know about dataset and the error it thowed due to the line # image=sample["image"].to(self.devicename)
+
+                # # =========================================================================
+                if self.args.test_dataset != 'oxfordflower':
+                    image = sample["image"].to(self.devicename)
+                else:
+                    image = sample[0].to(self.devicename)                
                 rep = self.model.forward_features(image)
                 rep_gather = rep if rep_gather is None else torch.cat([rep_gather, rep], dim=0)
                 if rep_gather.size(0) > 1000:
@@ -270,6 +274,16 @@ class Eraser(object):
         Raises:
             None
         """
+        losses={
+            'training':[],
+            'validation':[],
+            'testing':[]
+               }
+        accuracy={
+            'training':[],
+            'validation':[],
+            'testing':[]
+               }
 
         logger.info(f"Start lmerasing_with_mul_head on {self.devicename}")
         train_loader, val_loader, test_loader = test_data
@@ -329,12 +343,17 @@ class Eraser(object):
 
         for epoch in range(self.args.epochs):
             # train
+            avg_loss=avg_acc_train=0
             for i, sample in enumerate(train_loader):
                 # adjust learning rate
                 loss, acc_train = self.training(train_loader, prompter, optimizer, prompter_gather, i, scheduler, epoch, sample)
                 logger.info(
                     f"[Prompt Finetuning] Epoch: [{epoch}/{self.args.epochs}], Step: [{i}/{len(train_loader)}], Training loss: {loss.item()}, Training acc: {acc_train}"
                 )
+                avg_loss+=loss.item()
+                avg_acc_train+=acc_train
+            losses['training'].append(avg_loss/len(train_loader))
+            accuracy['training'].append(avg_acc_train/len(train_loader))
 
             # validate
             with torch.no_grad():
@@ -344,13 +363,17 @@ class Eraser(object):
                 if acc_val > BEST_ACC_VAL:
                     BEST_ACC_VAL = acc_val
                     best_prompter_gather = deepcopy(prompter_gather)
+                losses['validation'].append(loss_val)
+                accuracy['validation'].append(acc_val)
 
             if epoch > 0 and (epoch + 1) % 5 == 0:
                 with torch.no_grad():
                     acc_test, loss_test = self.evaluation(test_loader, prompter, best_prompter_gather)
                     logger.info(
                         f"[Prompt Testing] Epoch: {epoch}, Test acc: {acc_test}, Test loss: {loss_test}")
-        return 0
+                    losses['testing'].append(loss_test)
+                    accuracy['testing'].append(acc_test)
+        return losses,accuracy
 
     def training(self, train_loader, prompter, optimizer, prompter_gather, i, scheduler, epoch, sample):
         """
@@ -375,8 +398,13 @@ class Eraser(object):
         """
         global_step = len(train_loader) * epoch + i
         scheduler(global_step)
-        image = sample["image"].to(self.devicename)
-        label = sample["label"].to(self.devicename)
+        if self.args.test_dataset != 'oxfordflower':
+            image = sample["image"].to(self.devicename)
+            label = sample["label"].to(self.devicename)
+        else:
+            image = sample[0].to(self.devicename)
+            label = sample[1].to(self.devicename)
+        
                 # label[:int(self.args.batch_size/10)] = int(torch.randint(0, num_classes, (1,)).item())
         logits, loss = self.infer(
                     prompter, prompter_gather, image, label)
@@ -406,8 +434,12 @@ class Eraser(object):
         """
         num_total, correct, loss_total = 0, 0, 0
         for sample in test_loader:
-            image = sample["image"].to(self.devicename)
-            label = sample["label"].to(self.devicename)
+            if self.args.test_dataset != 'oxfordflower':
+                image = sample["image"].to(self.devicename)
+                label = sample["label"].to(self.devicename)
+            else:
+                image = sample[0].to(self.devicename)
+                label = sample[1].to(self.devicename)
             logits, loss = self.infer(
                             prompter, best_prompter_gather, image, label)
             loss_total += loss.item()
@@ -550,8 +582,12 @@ class Eraser(object):
         """
         num_total, correct, loss_total = 0, 0, 0
         for sample in test_loader:
-            image = sample["image"].to(self.devicename)
-            label = sample["label"].to(self.devicename)
+            if self.args.test_dataset != 'oxfordflower':
+                image = sample["image"].to(self.devicename)
+                label = sample["label"].to(self.devicename)
+            else:
+                image = sample[0].to(self.devicename)
+                label = sample[1].to(self.devicename)
             logits, loss = self.infer_rand(
                             prompter, prompter_gather, image, label)
             loss_total += loss.item()

@@ -5,9 +5,7 @@ import argparse
 
 MODEL_LIST = [
     "vit-b-22k", 
-    "vit-b-1k", 
     "swin-b-22k", 
-    "swin-b-1k", 
 ]
 
 ERASE_DATASETS = [
@@ -15,13 +13,16 @@ ERASE_DATASETS = [
     "cifar100", 
     "svhn", 
     "gtsrb",
+    "oxfordflower",
 ]
+
 
 DATASET_DIVERSITIES = {
     "cifar10": 70.2, 
     "cifar100": 70.9, 
     "svhn": 61.8, 
     "gtsrb": 67.5,
+    "oxfordflower":70.1 # assumeed this value
 }
 
 
@@ -36,7 +37,8 @@ class Arguments:
 
         ### data related
         self.add_argument('--batch_size', type=int, default=128, help='Batch size in training')
-        self.add_argument('--base_dir', type=str, default='/data-x/g12/huangqidong/')
+        # self.add_argument('--base_dir', type=str, default='/data-x/g12/huangqidong/')
+        self.add_argument('--base_dir', type=str, default='dataset_dir/g12/huangqidong/')
         self.add_argument('--crop_size', default=224, type=int, help='Input size of images [default: 224].')
         self.add_argument('--diversities', type=dict, default=DATASET_DIVERSITIES, help='Diversity values of datasets.')
 
@@ -62,8 +64,14 @@ class Arguments:
         self.add_argument('--training_usage_percentage', type=float, default=1.0, help='Percentage of training data for usage.')
 
         self.add_argument('--distance_threshold', type=float, default=10, help='Threshold for distance.')
-        self.add_argument('--test_dataset', type=str, default='oxford-flowers', choices=ERASE_DATASETS, help='The dataset selected for evaluation')
-        self.add_argument('--erasing_method', type=str, default='prompt_wo_head', choices=['lmeraser', 'random_part_tuning'])
+        self.add_argument('--test_dataset', type=str, default='cifar100', choices=ERASE_DATASETS, help='The dataset selected for evaluation')
+        self.add_argument('--loss_filename',type=str,default='loss',help='Saves the loss graph with filename')
+        self.add_argument('--acc_filename',type=str,default='accuracy',help='Saves the accuracy graph with filename')
+
+        
+        # self.add_argument('--erasing_method', type=str, default='prompt_wo_head', choices=['lmeraser', 'random_part_tuning'])
+        self.add_argument('--erasing_method', type=str, default='lmeraser', choices=['lmeraser', 'random_part_tuning'])
+
         self.add_argument('--checkpoint_dir', type=str, default='')
 
         ### tuning related
