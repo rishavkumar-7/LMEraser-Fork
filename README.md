@@ -1,6 +1,6 @@
 # Modified code of LMEraser with fixed errors
 ## LMEraser
-`Need to copy and merge the main branch and server beranch files manually. There are only few fies that require manual merge`
+`Need to copy and merge the main branch and server branch files manually. There are only few fies that require manual merge`
 ## Environment Setup
 
 This code has been tested with Python 3.11.5 and PyTorch 2.1.2 with CUDA 12.1 on Ubuntu 22.04. The required packages are listed in `environment.yaml`.
