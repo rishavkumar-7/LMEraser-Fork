@@ -31,7 +31,7 @@ def _load_checkpoint(args, model):
         # path = os.path.join(ROOT_DIR, "../checkpoints/vit_base_p16_224_in22k.pth")
         # path = os.path.join(ROOT_DIR, "../checkpoints_model/vit_base_p16_224_in22k.pth")
         # path = os.path.join(ROOT_DIR, "../checkpoints_model/vit_base_p16_224_in22k.pth")
-        path = "/media..(your_path)lmeraser/models/model_zoo/checkpoints_model/vit_base_p16_224_in22k.pth" # change this path as per your usage
+        path = "/media/respailab/Volume 2/RespAI-Jupyter-Server/Priyansh-Rishav/lmeraser/models/model_zoo/checkpoints_model/vit_base_p16_224_in22k.pth" # change this path as per your usage
 
     else:
         raise NotImplementedError
