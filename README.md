@@ -1,4 +1,5 @@
-# LMEraser: Large Model Unlearning through Adaptive Prompt Tuning
+# Modified code of LMEraser with fixed errors
+## LMEraser
 
 ## Environment Setup
 
@@ -8,55 +9,6 @@ This code has been tested with Python 3.11.5 and PyTorch 2.1.2 with CUDA 12.1 on
 ```bash
 conda env create -f environment.yaml -n lmeraser
 conda activate lmeraser
-```
-
-## File Structure
-The structure of the repository is as follows:
-```bash
-.
-├── arguments.py
-├── data_utils
-│   ├── datasets
-│   │   ├── cifar
-│   │   │   └── dataset.py
-│   │   ├── gtsrb
-│   │   │   └── dataset.py
-│   │   ├── __init__.py
-│   │   └── svhn
-│   │       └── dataset.py
-│   ├── loader.py
-│   └── transforms.py
-├── environment.yaml
-├── eraser
-│   ├── eraser.py
-│   └── main.py
-├── launch.py
-├── LICENSE
-├── models
-│   ├── backbones
-│   │   ├── backbone_swin.py
-│   │   ├── backbone_vit.py
-│   │   └── __init__.py
-│   ├── builder.py
-│   ├── checkpoints
-│   │   ├── swin_base_patch4_window7_224_22k.pth
-│   │   └── vit_base_p16_224_in22k.pth
-│   ├── model_zoo
-│   │   ├── __init__.py
-│   │   ├── swin.py
-│   │   └── vit.py
-│   └── prompters.py
-├── README.md
-├── scripts
-│   ├── run_distributed_gpu.sh
-│   ├── run_one_gpu.sh
-│   └── run_sbatch.sh
-└── utils
-    ├── distributed.py
-    ├── file_io.py
-    ├── logging.py
-    ├── lr.py
-    └── seed.py
 ```
 
 ## Dataset Preparation
@@ -75,8 +27,9 @@ The pre-trained vision models used can be downloaded from the provided links and
 
 ## Training
 
-Three scripts are provided for training on a single GPU, multiple GPUs, and a Slurm cluster, respectively. These scripts are located in `scripts/`.
-
+```bash
+python main.py --test_dataset=cifar100 --loss_filename=cifar100_loss --acc_filename=cifar100_acc
+```
 ## Changable Arguments
 
 Key arguments are listed in `arguments.py`. The default settings are configured for training on CIFAR-100 with a ViT-22k backbone.
